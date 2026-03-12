@@ -13,7 +13,7 @@ El flujo de procesamiento es asíncrono desde la perspectiva de la entrega, util
 5. **Almacenamiento Seguro:** Generación de URLs presignadas temporales sobre objetos en **Amazon S3**.
 6. **Notificación:** Envío automatizado de correos electrónicos transaccionales con **Amazon SES**.
 
-*(Nota: Aquí debes insertar la imagen del diagrama de arquitectura con los íconos de AWS que generamos anteriormente).*
+![Alt text](TextToSpeech.drawio.png)
 
 ## 🛠️ Tecnologías Utilizadas
 * **Backend:** Node.js, AWS SDK v3.
