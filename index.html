@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sintetizador de Texto a Voz</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 50px;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 { margin-top: 0; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="email"], textarea { 
+            width: 100%; 
+            padding: 10px; 
+            box-sizing: border-box; 
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        #charCount {
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        button { 
+            width: 100%;
+            padding: 12px; 
+            background-color: #ff9900; 
+            color: white; 
+            border: none; 
+            border-radius: 4px;
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: bold; 
+            margin-top: 10px;
+        }
+        button:hover { background-color: #e68a00; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #status { margin-top: 15px; font-weight: bold; text-align: center; }
+        .success { color: green; }
+        .error { color: red; }
+        .loading { color: #0073bb; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Generar Audio</h2>
+        <form id="audioForm">
+            <div class="form-group">
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" id="email" required placeholder="tu-correo@ejemplo.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="text">Texto a sintetizar:</label>
+                <textarea id="text" rows="6" required maxlength="350" placeholder="Escribe el texto (máximo 350 caracteres)..."></textarea>
+                <div id="charCount">0 / 350 caracteres</div>
+            </div>
+            
+            <button type="submit" id="submitBtn">Enviar y Generar</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // Lógica para el contador de caracteres
+        const textarea = document.getElementById('text');
+        const charCount = document.getElementById('charCount');
+
+        textarea.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            charCount.textContent = `${currentLength} / 350 caracteres`;
+            
+            if (currentLength === 350) {
+                charCount.style.color = 'red';
+            } else {
+                charCount.style.color = '#666';
+            }
+        });
+
+        // Lógica de envío del formulario
+        document.getElementById('audioForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            
+            const email = document.getElementById('email').value;
+            const text = textarea.value;
+            const statusDiv = document.getElementById('status');
+            const submitBtn = document.getElementById('submitBtn');
+
+            const API_URL = 'https://vp1t4b5oea.execute-api.us-east-1.amazonaws.com/prod/generar'; 
+
+            statusDiv.textContent = 'Procesando tu solicitud...';
+            statusDiv.className = 'loading';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email: email, 
+                        text: text 
+                    })
+                });
+
+                if (response.ok) {
+                    statusDiv.textContent = '¡Listo! Revisa tu bandeja de entrada para descargar el audio.';
+                    statusDiv.className = 'success';
+                    document.getElementById('audioForm').reset();
+                    charCount.textContent = '0 / 350 caracteres'; // Reiniciar contador
+                    charCount.style.color = '#666';
+                } else {
+                    statusDiv.textContent = 'Ocurrió un error en el servidor. Intenta de nuevo.';
+                    statusDiv.className = 'error';
+                }
+            } catch (error) {
+                console.error('Error en la petición:', error);
+                statusDiv.textContent = 'Error de conexión. Verifica la configuración CORS en API Gateway.';
+                statusDiv.className = 'error';
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
